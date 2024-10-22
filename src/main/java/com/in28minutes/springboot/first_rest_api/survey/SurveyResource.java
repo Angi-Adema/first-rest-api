@@ -5,7 +5,9 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -76,5 +78,17 @@ public class SurveyResource {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 		
 		return question;
+	}
+	
+	// Create a POST request to create a new survey question. Map the question to a specific survey Id. Use URL: localhost:8080/surveys/.
+	@RequestMapping(value = "/surveys/{surveyId}/questions", method = RequestMethod.POST)
+	
+	// How can we send the details of the question? We can send it as part of the request body.
+	public void addNewSurveyQuestion(@PathVariable String surveyId, 
+			@RequestBody Question question) {   // @RequestBody captures the request body.
+		
+			// We want to take this question and add it to a specific survey.
+			surveyService.addNewSurveyQuestion(surveyId, question);
+		
 	}
 }
