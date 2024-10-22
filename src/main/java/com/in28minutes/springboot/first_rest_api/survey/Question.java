@@ -24,6 +24,11 @@ public class Question {
 	public String getId() {
 		return id;
 	}
+	
+	// Have to add a setId() here to generate and set a new Id for a new question.
+	public void setId(String id) {
+		this.id = id;
+	}
 
 	public String getDescription() {
 		return description;

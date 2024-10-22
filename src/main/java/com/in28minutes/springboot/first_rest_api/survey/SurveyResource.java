@@ -1,15 +1,18 @@
 // We build a new REST API in here that will GET all the details of all the surveys.
 package com.in28minutes.springboot.first_rest_api.survey;
 
+import java.net.URI;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 // Since this is a REST API we add @RestController.
 @RestController
@@ -84,11 +87,18 @@ public class SurveyResource {
 	@RequestMapping(value = "/surveys/{surveyId}/questions", method = RequestMethod.POST)
 	
 	// How can we send the details of the question? We can send it as part of the request body.
-	public void addNewSurveyQuestion(@PathVariable String surveyId, 
+	public ResponseEntity<Object> addNewSurveyQuestion(@PathVariable String surveyId,   // Changed the name of this method to ResponseEntity<Object> after added below.
 			@RequestBody Question question) {   // @RequestBody captures the request body.
 		
 			// We want to take this question and add it to a specific survey.
-			surveyService.addNewSurveyQuestion(surveyId, question);
+			String questionId = surveyService.addNewSurveyQuestion(surveyId, question);
+			
+			// We can also create a location and return it back.
+			// Our location currently is: /surveys/{surveyId}/questions/{questionId}  We need access to the question we are creating. We want to send the location as part of response.
+			URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+					.path("/{questionId}").buildAndExpand(questionId).toUri();  // Picking up the URI of this current request and appending /{questionId} and build this with the actual questionId. Be sure name of parameter and variable match.
+			// Return the correct response of 201 to confirm the question has been created.
+			return ResponseEntity.created(location).build();
 		
 	}
 }

@@ -1,5 +1,7 @@
 package com.in28minutes.springboot.first_rest_api.survey;
 
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -84,12 +86,29 @@ public class SurveyService {
 	}
 
 
-	public void addNewSurveyQuestion(String surveyId, Question question) {
+	public String addNewSurveyQuestion(String surveyId, Question question) {   // Put this back to String from void to return the Id of the question that is generated.
 		
 		// Get all the questions from the specific survey.
 		List<Question> questions = retrieveAllSurveyQuestions(surveyId);
 		
+		// Add logic to generate an Id for the question rather than having the user input it. We extract these two lines to a new method then refactor inline for lines 98 and 99.
+		//SecureRandom secureRandom = new SecureRandom();
+		//String randomId = new BigInteger(32, secureRandom).toString();
+		
+		// Set the random Id into the question.
+		question.setId(generateRandomId());
+		
 		// Add in the question.
 		questions.add(question);
+		
+		// Return the Id that is generated.
+		return question.getId();
+	}
+
+
+	private String generateRandomId() {
+		SecureRandom secureRandom = new SecureRandom();
+		String randomId = new BigInteger(32, secureRandom).toString();
+		return randomId;
 	}
 }
