@@ -3,6 +3,8 @@ package com.in28minutes.springboot.first_rest_api.survey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.springframework.stereotype.Service;
 
@@ -28,5 +30,26 @@ public class SurveyService {
 		Survey survey = new Survey("Survey1", "My Favorite Survey", "Description of the Survey", questions);
 
 		surveys.add(survey);
+	}
+
+	public List<Survey> retrieveAllSurveys() {
+		return surveys;
+	}
+
+	
+	public Survey retrieveSurveyById(String surveyId) {
+		
+		Predicate<? super Survey> predicate = 
+				// Given a survey, we want to check survey.getId() and confirm if it matches the survey passed in. Must use .equals() to compare strings.
+				survey -> survey.getId().equals(surveyId);
+				
+		// Create a stream to filter surveys by Id and find the first survey Id that matches the passed in value (use findFirst() as the Id may not exist at all. 
+		// After enter findFirst() CTRL + 1 to assign to local variable. We use 'Optional' as a survey might be returned or not (see info CTRL + click on Optional).
+		Optional<Survey> optionalSurvey = surveys.stream().filter(predicate).findFirst();
+		
+		// Check if the returned data is empty and if not, return the survey.
+		if(optionalSurvey.isEmpty()) return null;
+		
+		return optionalSurvey.get();
 	}
 }
