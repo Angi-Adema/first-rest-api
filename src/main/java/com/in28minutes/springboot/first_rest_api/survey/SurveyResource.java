@@ -40,11 +40,41 @@ public class SurveyResource {
 		
 		// Check if survey is null.
 		if (survey == null)
-			// Throw a new response to this exception.
+			// Throw correct error message if the Id does not exist.
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 		
 		return survey;
 	}
+	
+	// Create a GET request to retrieve all the questions from a survey. Use URL: localhost:8080/surveys/Survey1/questions.
+	@RequestMapping("/surveys/{surveyId}/questions")
+	
+	// Since we are not looking for a survey, we want to return a List of all the questions of the survey inquired about back.
+	public List<Question> retrieveAllSurveyQuestions(@PathVariable String surveyId) {
+		
+		List<Question> questions = surveyService.retrieveAllSurveyQuestions(surveyId);  // Create the retrieveAllSurveyQuestions method.
+		
+		// Check if the questions are null.
+		if (questions == null)
+			// Throw a new error if the questions do not exist.
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		
+		return questions;
+	}
 
-
+	// Create a GET request to retrieve a specific survey question. Use URL: localhost:8080/surveys/Survey1/questions/Question1
+	@RequestMapping("/surveys/{surveyId}/questions/{questionId}")
+	
+	// Since we are not looking for a survey, we want to return a List of all the questions of the survey inquired about back.
+	public Question retrieveSpecificSurveyQuestion(@PathVariable String surveyId, @PathVariable String questionId) {
+		
+		Question question = surveyService.retrieveSpecificSurveyQuestion(surveyId, questionId);
+		
+		// Check if the questions are null.
+		if (question == null)
+			// Throw a new error if the questions do not exist.
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		
+		return question;
+	}
 }

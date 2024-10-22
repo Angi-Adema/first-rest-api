@@ -52,4 +52,34 @@ public class SurveyService {
 		
 		return optionalSurvey.get();
 	}
+
+
+	public List<Question> retrieveAllSurveyQuestions(String surveyId) {
+		
+		Survey survey = retrieveSurveyById(surveyId);   // Extract retrieveSurveyById to a local variable and call it survey.
+		
+		// If the survey does not exist then return null back.
+		if (survey == null) return null;
+		
+		// If not null then return the questions back.
+		return survey.getQuestions();  
+	}
+
+
+	public Question retrieveSpecificSurveyQuestion(String surveyId, String questionId) {
+		
+		// Pull in a list of all the survey questions.
+		List<Question> surveyQuestions = retrieveAllSurveyQuestions(surveyId);
+		
+		// Control statement to handle if there are no questions.
+		if (surveyQuestions == null) return null;
+		
+		// If it is not null then we need to loop through the questions via a stream and filter out the question we are trying to retrieve and return the first matching question Id.
+		Optional<Question> optionalQuestion = surveyQuestions.stream().filter(q -> q.getId().equalsIgnoreCase(questionId)).findFirst();
+		
+		// We check if the optionalQuestion is null and return null. Otherwise return the optionalQuestion.
+		if (optionalQuestion.isEmpty()) return null;
+		
+		return optionalQuestion.get();
+	}
 }
