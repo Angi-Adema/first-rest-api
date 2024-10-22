@@ -1,5 +1,6 @@
 package com.in28minutes.springboot.first_rest_api.helloworld;
 
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 //import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,5 +27,20 @@ public class HelloWorldResource {
 	//public String helloWorldBean() {
 	public HelloWorldBean helloWorldBean() {
 		return new HelloWorldBean("Hello World");
+	}
+	
+	// When building a REST API, understanding  Path Variable vs. Path Params is very important. URLs start to get complex, /user/Ranga/todos/1 the values of Ranga and 1 are Path Variables.
+	// Here we want the user to specify a name using a Path Variable. We then need to map name to a parameter in the method using @PathVariable. URL becomes localhost:8080/hello-world-path-param/1 or enter a name for 1.
+	@RequestMapping("/hello-world-path-param/{name}")
+	public HelloWorldBean helloWorldPathParam(@PathVariable String name) {
+		return new HelloWorldBean("Hello World, " + name);
+	}
+	
+	// Can have multiple path params. URL becomes localhost:8080/hello-world-path/Angi/message/Hello! Where Angi is getting mapped to name and Hello! is getting mapped to message.
+	@RequestMapping("/hello-world-path-param/{name}/message/{message}")
+	public HelloWorldBean helloWorldMultiplePathParam
+					(@PathVariable String name,
+							@PathVariable String message) {
+		return new HelloWorldBean("Hello World " + name + ", " + message);
 	}
 }
