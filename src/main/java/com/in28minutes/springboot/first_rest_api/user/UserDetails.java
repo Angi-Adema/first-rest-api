@@ -16,6 +16,11 @@ public class UserDetails {  // We want to add users, delete users, etc.
 	private String name;
 	private String role;
 	
+	// To populate the User details in UserDetailsCommandLineRunner.java, we must have an empty constructor.
+	public UserDetails() {
+		
+	}
+	
 	// Generate a constructor to initialize the fields.
 	public UserDetails(String name, String role) {
 		super();
