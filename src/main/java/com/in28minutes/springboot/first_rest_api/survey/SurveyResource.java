@@ -51,7 +51,7 @@ public class SurveyResource {
 		return survey;
 	}
 	
-	// Create a GET request to retrieve all the questions from a survey. Use URL: localhost:8080/surveys/Survey1/questions.
+	// Create a PUT request to update a question by removing it and replacing it. Use URL: localhost:8080/surveys/{surveyId}/questions/{questionId}.
 	@RequestMapping("/surveys/{surveyId}/questions")
 	
 	// Since we are not looking for a survey, we want to return a List of all the questions of the survey inquired about back.
@@ -100,5 +100,29 @@ public class SurveyResource {
 			// Return the correct response of 201 to confirm the question has been created.
 			return ResponseEntity.created(location).build();
 		
+	}
+	
+	// Create a DELETE request to delete a survey question. Use URL: localhost:8080/surveys/{surveyId}/questions/{questionId}.
+	@RequestMapping(value = "/surveys/{surveyId}/questions/{questionId}", method = RequestMethod.DELETE)
+	
+	// Since we are not looking for a survey, we want to return a List of all the questions of the survey inquired about back.
+	public ResponseEntity<Object> deleteSurveyQuestion(@PathVariable String surveyId, @PathVariable String questionId) {
+		
+		surveyService.deleteSurveyQuestion(surveyId, questionId);
+		
+		return ResponseEntity.noContent().build();
+	}
+	
+	// Create a PUT request to update a survey question. Use URL: localhost:8080/surveys/{surveyId}/questions/{questionId}.
+	@RequestMapping(value = "/surveys/{surveyId}/questions/{questionId}", method = RequestMethod.PUT)
+	
+	// Since we are not looking for a survey, we want to return a List of all the questions of the survey inquired about back.
+	public ResponseEntity<Object> updateSurveyQuestion(@PathVariable String surveyId, 
+			@PathVariable String questionId, 
+			@RequestBody Question question) {  // We add an @RequestBody to get the details from the user in the request body.
+		
+		surveyService.updateSurveyQuestion(surveyId, questionId, question);
+		
+		return ResponseEntity.noContent().build();
 	}
 }

@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 
 // This is a component we want Spring to manage so we add @Service.
 @Service
@@ -110,5 +111,39 @@ public class SurveyService {
 		SecureRandom secureRandom = new SecureRandom();
 		String randomId = new BigInteger(32, secureRandom).toString();
 		return randomId;
+	}
+
+	public String deleteSurveyQuestion(String surveyId, String questionId) {
+		
+		// Pull in a list of all the survey questions.
+		List<Question> surveyQuestions = retrieveAllSurveyQuestions(surveyId);
+		
+		// Control statement to handle if there are no questions.
+		if (surveyQuestions == null) return null;
+		
+		// If it is not null then we need to loop through the questions via a stream and filter out the question we are deleting.
+		Predicate<? super Question> predicate = q -> q.getId().equalsIgnoreCase(questionId);  // We extracted the q -> q.getId().equalsIgnoreCase(questionId) to a local variable for Predicate.
+		
+		// Remove if a specific predicate matches. We get a boolean value back to confirm if the question has been removed or not.
+		boolean removed = surveyQuestions.removeIf(predicate);  // If removed successfully it will return true, else will be false.
+		
+		// Handle if boolean returns false.
+		if(!removed) return null;
+		
+		return questionId;
+	}
+
+
+	public void updateSurveyQuestion(String surveyId, String questionId, Question question) {
+		
+		// We bring in the list of survey questions and from this we want to remove the question that matches the specific Id.
+		List<Question> questions = retrieveAllSurveyQuestions(surveyId);
+		
+		// Remove the question that matches this specific predicate.
+		questions.removeIf(q -> q.getId().equalsIgnoreCase(questionId));
+		
+		// Here we add the question back.
+		questions.add(question);
+		
 	}
 }
