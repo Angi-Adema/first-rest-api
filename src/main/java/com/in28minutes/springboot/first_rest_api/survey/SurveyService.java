@@ -91,7 +91,7 @@ public class SurveyService {
 		// Get all the questions from the specific survey.
 		List<Question> questions = retrieveAllSurveyQuestions(surveyId);
 		
-		// Add logic to generate an Id for the question rather than having the user input it. We extract these two lines to a new method then refactor inline for lines 98 and 99.
+		// Add logic to generate an Id for the question rather than having the user input it. We extract these two lines to a new method then refactor inline for line 99.
 		//SecureRandom secureRandom = new SecureRandom();
 		//String randomId = new BigInteger(32, secureRandom).toString();
 		
