@@ -2,6 +2,7 @@
 package com.in28minutes.springboot.first_rest_api.survey;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,13 @@ import org.springframework.http.ResponseEntity;
 // Launch up entire Spring Boot application using @SpringBootTest and configure to run on a random port so we do not use a hard coded port that might have other apps running on them. (Instead of 8080)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class SurveyResourceIT {
+	
+	// The URL we want to send the request to has this URI as we will store this as
+	// a constant. We will fire a request below to this specific Question URL.
+	private static String SPECIFIC_QUESTION_URL = "/surveys/Survey1/questions/Question1";
+	
+	@Autowired
+	private TestRestTemplate template;
 
 	// We want to test the GET method for finding a specific question.
 	// Where do we want to fire a request to? This specific URL:
@@ -44,13 +52,7 @@ public class SurveyResourceIT {
 	// (localhost:RANDOM_PORT) we just need to add in the URI we have created
 	// (/surveys/Survey1/questions/Question1)
 	// To make use of this, we add in @Autowired
-
-	// The URL we want to send the request to has this URI as we will store this as
-	// a constant. We will fire a request below to this specific Question URL.
-	private static String SPECIFIC_QUESTION_URL = "/surveys/Survey1/questions/Question1";
-
-	@Autowired
-	private TestRestTemplate template;
+	
 
 	@Test
 	void retrieveSpecificSurveyQuestion_basicScenario() throws JSONException {
@@ -76,9 +78,15 @@ public class SurveyResourceIT {
 				 
 				""";
 		
+		// First check that the status of the response is a successful 200.
+		assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
+		
+		// Then check if the returned content type is JSON: [Content-Type:"application/json", there may be several headers with "Content-Type" so we add .get(0). Params expected first then actual.
+		assertEquals("application/json", responseEntity.getHeaders().get("Content-Type").get(0));
+		
 		// Add an assert. We are not comparing all attributes, only those specified above.
 		JSONAssert.assertEquals(expectedResponse, responseEntity.getBody(), false);
-		
+
 		// Whenever we write unit tests, asserts are the most important part and we need to identify what to check for in the response.
 		// Since the two strings were fairly identical, we added .trim() to the assertEquals to see if there might be an extra space somewhere and adding this made the test pass.
 		//assertEquals(expectedResponse.trim(), responseEntity.getBody());   // commented out when we added the JSONAssert above.
