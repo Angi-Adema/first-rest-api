@@ -16,11 +16,20 @@ import org.springframework.http.ResponseEntity;
 // Launch up entire Spring Boot application using @SpringBootTest and configure to run on a random port so we do not use a hard coded port that might have other apps running on them. (Instead of 8080)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class SurveyResourceIT {
-	
+
 	// The URL we want to send the request to has this URI as we will store this as
 	// a constant. We will fire a request below to this specific Question URL.
 	private static String SPECIFIC_QUESTION_URL = "/surveys/Survey1/questions/Question1";
+
+	// Get all questions using a GET request for a generic question.
+	private static String GENERIC_QUESTIONS_URL = "/surveys/Survey1/questions";
 	
+	// Get all surveys.
+	private static String GENERIC_SURVEYS_URL = "/surveys";
+	
+	// Get one specific survey.
+	private static String SPECIFIC_SURVEY_URL = "/surveys/Survey1";
+
 	@Autowired
 	private TestRestTemplate template;
 
@@ -43,8 +52,8 @@ public class SurveyResourceIT {
 			  "correctAnswer": "AWS"
 			}
 
-						"""; // Triple quotes is any text block you want where you can format how you want
-								// and work with any piece of text. Called "text block".
+				"""; // Triple quotes is any text block you want where you can format how you want
+					// and work with any piece of text. Called "text block".
 
 	// If you want to fire a REST API request we make use of a REST template. Use
 	// this to fire the specific request to a URL and get a response back.
@@ -52,21 +61,25 @@ public class SurveyResourceIT {
 	// (localhost:RANDOM_PORT) we just need to add in the URI we have created
 	// (/surveys/Survey1/questions/Question1)
 	// To make use of this, we add in @Autowired
-	
 
+	// Test to retrieve a specific question.
 	@Test
 	void retrieveSpecificSurveyQuestion_basicScenario() throws JSONException {
 
 		// We want to send a GET request to the above URL.
 		ResponseEntity<String> responseEntity = template.getForEntity(SPECIFIC_QUESTION_URL, String.class);
-		
-		// Check expected response. This is what we copied from the console log as the response body. Makes the test very complex checking against JSON strings, better to use JsonAssert.
-		//String expectedResponse = 
-				//"""
-				 //{"id":"Question1","description":"Most Popular Cloud Platform Today","options":["AWS","Azure","Google Cloud","Oracle Cloud"],"correctAnswer":"AWS"}
-				 
-				//""";
-		
+
+		// Check expected response. This is what we copied from the console log as the
+		// response body. Makes the test very complex checking against JSON strings,
+		// better to use JsonAssert.
+		// String expectedResponse =
+		// """
+		// {"id":"Question1","description":"Most Popular Cloud Platform
+		// Today","options":["AWS","Azure","Google Cloud","Oracle
+		// Cloud"],"correctAnswer":"AWS"}
+
+		// """;
+
 		// Add our own expected response different from the actual response.
 		String expectedResponse = 
 				"""
@@ -75,25 +88,143 @@ public class SurveyResourceIT {
 					 "description":"Most Popular Cloud Platform Today",
 					 "correctAnswer":"AWS"
 				 }
-				 
+
 				""";
-		
+
 		// First check that the status of the response is a successful 200.
 		assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
-		
-		// Then check if the returned content type is JSON: [Content-Type:"application/json", there may be several headers with "Content-Type" so we add .get(0). Params expected first then actual.
+
+		// Then check if the returned content type is JSON:
+		// [Content-Type:"application/json", there may be several headers with
+		// "Content-Type" so we add .get(0). Params expected first then actual.
 		assertEquals("application/json", responseEntity.getHeaders().get("Content-Type").get(0));
-		
-		// Add an assert. We are not comparing all attributes, only those specified above.
+
+		// Add an assert. We are not comparing all attributes, only those specified
+		// above.
 		JSONAssert.assertEquals(expectedResponse, responseEntity.getBody(), false);
 
-		// Whenever we write unit tests, asserts are the most important part and we need to identify what to check for in the response.
-		// Since the two strings were fairly identical, we added .trim() to the assertEquals to see if there might be an extra space somewhere and adding this made the test pass.
-		//assertEquals(expectedResponse.trim(), responseEntity.getBody());   // commented out when we added the JSONAssert above.
-		
+		// Whenever we write unit tests, asserts are the most important part and we need
+		// to identify what to check for in the response.
+		// Since the two strings were fairly identical, we added .trim() to the
+		// assertEquals to see if there might be an extra space somewhere and adding
+		// this made the test pass.
+		// assertEquals(expectedResponse.trim(), responseEntity.getBody()); // commented
+		// out when we added the JSONAssert above.
+
 		// Get the response body and the headers of the response.
-		//System.out.println(responseEntity.getBody());
-		//System.out.println(responseEntity.getHeaders());
+		// System.out.println(responseEntity.getBody());
+		// System.out.println(responseEntity.getHeaders());
+	}
+
+	// Test for retrieving all questions.
+	@Test
+	void retrieveAllSurveyQuestions_basicScenario() throws JSONException {
+
+		// We want to send a GET request to the above URL.
+		ResponseEntity<String> responseEntity = template.getForEntity(GENERIC_QUESTIONS_URL, String.class);
+
+		// Check expected response. This is what we copied from the browser once got response running the app (localhost:8080/surveys/Survey1/questions. 
+
+		// We would not want to check all these details (id, description, options, correctAnswer), we would just want to check the most important items.
+		// Does the response contain three events and do the ids match?
+		String expectedResponse = 
+				"""
+				
+						[
+						  {
+						    "id": "Question1"
+						  },
+						  {
+						    "id": "Question2"
+						  },
+						  {
+						    "id": "Question3"
+						  }
+						]
+
+				""";
+
+		// First check that the status of the response is a successful 200.
+		assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
+
+		// Then check if the returned content type is JSON:
+		// [Content-Type:"application/json", there may be several headers with
+		// "Content-Type" so we add .get(0). Params expected first then actual.
+		assertEquals("application/json", responseEntity.getHeaders().get("Content-Type").get(0));
+
+		// Add an assert. We are not comparing all attributes, only those specified
+		// above.
+		JSONAssert.assertEquals(expectedResponse, responseEntity.getBody(), false);
+
+	}
+	
+	// Test to retrieve all surveys.
+	@Test
+	void retrieveAllSurveys_basicScenario() throws JSONException {
+
+		// We want to send a GET request to the above URL.
+		ResponseEntity<String> responseEntity = template.getForEntity(GENERIC_SURVEYS_URL, String.class);
+
+		// Check expected response. This is what we copied from the browser once got response running the app (localhost:8080/surveys/Survey1/questions. 
+
+		// We would not want to check all these details (id, description, options, correctAnswer), we would just want to check the most important items.
+		// Does the response contain three events and do the ids match?
+		String expectedResponse = 
+				"""
+				
+						[
+						  {
+						    "id": "Survey1"
+						  }
+						]
+
+				""";
+
+		// First check that the status of the response is a successful 200.
+		assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
+
+		// Then check if the returned content type is JSON:
+		// [Content-Type:"application/json", there may be several headers with
+		// "Content-Type" so we add .get(0). Params expected first then actual.
+		assertEquals("application/json", responseEntity.getHeaders().get("Content-Type").get(0));
+
+		// Add an assert. We are not comparing all attributes, only those specified
+		// above.
+		JSONAssert.assertEquals(expectedResponse, responseEntity.getBody(), false);
+
+	}
+	
+	// Test to retrieve a specific survey.
+	@Test
+	void retrieveSurveyById_basicScenario() throws JSONException {
+
+		// We want to send a GET request to the above URL.
+		ResponseEntity<String> responseEntity = template.getForEntity(SPECIFIC_SURVEY_URL, String.class);
+
+		// Check expected response. This is what we copied from the browser once got response running the app (localhost:8080/surveys/Survey1/questions. 
+
+		// We would not want to check all these details (id, description, options, correctAnswer), we would just want to check the most important items.
+		// Does the response contain three events and do the ids match?
+		String expectedResponse = 
+				"""
+					{
+						"id": "Survey1"
+					}
+
+				""";
+
+		// First check that the status of the response is a successful 200.
+		assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
+
+		// Then check if the returned content type is JSON:
+		// [Content-Type:"application/json", there may be several headers with
+		// "Content-Type" so we add .get(0). Params expected first then actual.
+		assertEquals("application/json", responseEntity.getHeaders().get("Content-Type").get(0));
+
+		// Add an assert. We are not comparing all attributes, only those specified
+		// above.
+		JSONAssert.assertEquals(expectedResponse, responseEntity.getBody(), false);
+
 	}
 }
 
@@ -105,10 +236,3 @@ public class SurveyResourceIT {
 //{"id":"Question1","description":"Most Popular Cloud Platform Today","options":["AWS","Azure","Google Cloud","Oracle Cloud"],"correctAnswer":"AWS"}>
 //> but was: <
 //[Content-Type:"application/json", Transfer-Encoding:"chunked", Date:"Thu, 24 Oct 2024 21:52:46 GMT", Keep-Alive:"timeout=60", Connection:"keep-alive"]
-
-
-
-
-
-
-

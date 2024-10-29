@@ -21,7 +21,7 @@ public class SurveyResource {
 	// What do we want to do? We want to make use of the SurveyService.
 	private SurveyService surveyService;
 	
-	// We are using contructor injection with Spring so we create a constructor.
+	// We are using constructor injection with Spring so we create a constructor.
 	public SurveyResource(SurveyService surveyService) {
 		super();
 		this.surveyService = surveyService;
