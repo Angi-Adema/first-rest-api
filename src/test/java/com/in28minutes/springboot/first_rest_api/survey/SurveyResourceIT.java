@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
 // Launch up entire Spring Boot application using @SpringBootTest and configure to run on a random port so we do not use a hard coded port that might have other apps running on them. (Instead of 8080)
@@ -226,6 +229,69 @@ public class SurveyResourceIT {
 		JSONAssert.assertEquals(expectedResponse, responseEntity.getBody(), false);
 
 	}
+	
+	// Write test for the POST request of adding a new survey question.
+	// URL we are firing a request to: http://localhost:8080/surveys/Survey1/questions
+	// Needs to be a POST request.
+	// We also need to set the headers: Content-Type application/json  (Headers found in running post request in Talend)
+	// Check if we got a successful response. 
+	// As well as get the Location: header in Talend (http://localhost:8080/surveys/Survey1/questions/2327916144).
+	@Test
+	void addNewSurveyQuestion_basicScenario() {
+		
+		// Response body:
+		String requestBody = """
+				{
+	  				"description": "Your Favorite Language",
+	  				"options": [
+	    			"Java",
+	    			"Python",
+	    			"JavaScript",
+	    			"Ruby"
+	  				],
+	  				"correctAnswer": "Java"
+				}
+
+		  """;
+		// URL we are firing a request to: http://localhost:8080/surveys/Survey1/questions
+		// Needs to be a POST request.
+		// RequestBody
+		
+		// We also need to set the headers: Content-Type application/json  (Headers found in running post request in Talend)
+		// Configuration for request header.
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("Content-Type", "application/json");
+		
+		// Combine both headers with the request body.
+		HttpEntity<String> httpEntity = new HttpEntity<String>(requestBody, headers);
+		
+		// Can use template.postForEntity here for the POST request, however when we have complex things like setting headers etc. it is more convenient to use template.exchange.
+		// Fire a POST request to the above URL and make use of this HttpEntity. 
+		// First param, we already have the GENERIC_QUESTIONS_URL so we will make use of it here for initial GET request to the POST request, second param is what kind of request, third is httpEntity and
+		// fourth is type of response.
+		ResponseEntity<String> responseEntity = template.exchange(GENERIC_QUESTIONS_URL, HttpMethod.POST, httpEntity, String.class);
+		
+		// Now that we have configured the headers in here, lets do a sysout.
+		//System.out.println(responseEntity.getHeaders());
+		
+		// Write asserts to check if we got a successful response. 
+		assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
+		
+		// As well as get the Location: header in Talend (http://localhost:8080/surveys/Survey1/questions/2327916144).
+		
+		// Initial response shows the below headers where the test ran on a different port as well as assigned its own id. We write an assert to see if it contains something like this.
+		//[Location:"http://localhost:52940/surveys/Survey1/questions/3451927084", Content-Length:"0", Date:"Tue, 29 Oct 2024 19:00:54 GMT", Keep-Alive:"timeout=60", Connection:"keep-alive"]
+		//null
+		String locationHeader = responseEntity.getHeaders().get("Location").get(0);  // To write POST/DELETE together, we extracted to local variable & called it locationHeader.
+		assertTrue(locationHeader.contains("/surveys/Survey1/questions"));
+		
+		// The test as is written above is causing the test to fail because there are only three question in the survey and this post request is creating a fourth question. We need to negate this side effect
+		// by immediately deleting the question after it is created. We need to combine the test for both the POST and the DELETE together.
+		
+		// Assign a DELETE request to locationHeader.
+		template.delete(locationHeader);
+
+	}
 }
 
 // Below is the response that we initially got after adding in the first assertEquals in testing the specific question. We removed the <> and compared just the two strings and saw they were fairly identical.
@@ -236,3 +302,5 @@ public class SurveyResourceIT {
 //{"id":"Question1","description":"Most Popular Cloud Platform Today","options":["AWS","Azure","Google Cloud","Oracle Cloud"],"correctAnswer":"AWS"}>
 //> but was: <
 //[Content-Type:"application/json", Transfer-Encoding:"chunked", Date:"Thu, 24 Oct 2024 21:52:46 GMT", Keep-Alive:"timeout=60", Connection:"keep-alive"]
+
+// When writing tests, we cannot guarantee the order the tests will be run in so we have to be sure each test has no side effects.
