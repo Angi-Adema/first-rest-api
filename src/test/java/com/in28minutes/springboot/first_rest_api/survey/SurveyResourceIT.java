@@ -1,4 +1,4 @@
-// First integration test.
+// First integration test. Launch entire Spring Boot application and test it as a whole. (Web -> Business -> Data -> Database)
 package com.in28minutes.springboot.first_rest_api.survey;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
