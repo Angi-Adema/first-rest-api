@@ -4,6 +4,8 @@ package com.in28minutes.springboot.first_rest_api.survey;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Base64;
+
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -32,7 +34,7 @@ public class SurveyResourceIT {
 	
 	// Get one specific survey.
 	private static String SPECIFIC_SURVEY_URL = "/surveys/Survey1";
-
+	
 	@Autowired
 	private TestRestTemplate template;
 
@@ -69,8 +71,14 @@ public class SurveyResourceIT {
 	@Test
 	void retrieveSpecificSurveyQuestion_basicScenario() throws JSONException {
 
+		HttpHeaders headers = createHttpContentTypeAndAuthorizationHeaders();
+		
+		HttpEntity<String> httpEntity = new HttpEntity<String>(null, headers);
+	
+		ResponseEntity<String> responseEntity = template.exchange(SPECIFIC_QUESTION_URL, HttpMethod.GET, httpEntity, String.class);  // Used SPECIFIC_QUESTION_URL not GENERIC_QUESTION_URL, use http method .GET
+		
 		// We want to send a GET request to the above URL.
-		ResponseEntity<String> responseEntity = template.getForEntity(SPECIFIC_QUESTION_URL, String.class);
+		//ResponseEntity<String> responseEntity = template.getForEntity(SPECIFIC_QUESTION_URL, String.class);  // Comment this out after adding the headers into this test to run with Spring security.
 
 		// Check expected response. This is what we copied from the console log as the
 		// response body. Makes the test very complex checking against JSON strings,
@@ -123,8 +131,14 @@ public class SurveyResourceIT {
 	@Test
 	void retrieveAllSurveyQuestions_basicScenario() throws JSONException {
 
+		HttpHeaders headers = createHttpContentTypeAndAuthorizationHeaders();
+		
+		HttpEntity<String> httpEntity = new HttpEntity<String>(null, headers);
+		
+		ResponseEntity<String> responseEntity = template.exchange(GENERIC_QUESTIONS_URL, HttpMethod.GET, httpEntity, String.class);
+		
 		// We want to send a GET request to the above URL.
-		ResponseEntity<String> responseEntity = template.getForEntity(GENERIC_QUESTIONS_URL, String.class);
+		//ResponseEntity<String> responseEntity = template.getForEntity(GENERIC_QUESTIONS_URL, String.class); // Commented out this line once add the above three lines for Spring security.
 
 		// Check expected response. This is what we copied from the browser once got response running the app (localhost:8080/surveys/Survey1/questions. 
 
@@ -164,9 +178,15 @@ public class SurveyResourceIT {
 	// Test to retrieve all surveys.
 	@Test
 	void retrieveAllSurveys_basicScenario() throws JSONException {
+		
+		HttpHeaders headers = createHttpContentTypeAndAuthorizationHeaders();
+		
+		HttpEntity<String> httpEntity = new HttpEntity<String>(null, headers);
+		
+		ResponseEntity<String> responseEntity = template.exchange(GENERIC_SURVEYS_URL, HttpMethod.GET, httpEntity, String.class);
 
 		// We want to send a GET request to the above URL.
-		ResponseEntity<String> responseEntity = template.getForEntity(GENERIC_SURVEYS_URL, String.class);
+		//ResponseEntity<String> responseEntity = template.getForEntity(GENERIC_SURVEYS_URL, String.class);  // Commented this out once add lines above for Spring security.
 
 		// Check expected response. This is what we copied from the browser once got response running the app (localhost:8080/surveys/Survey1/questions. 
 
@@ -200,9 +220,15 @@ public class SurveyResourceIT {
 	// Test to retrieve a specific survey.
 	@Test
 	void retrieveSurveyById_basicScenario() throws JSONException {
+		
+		HttpHeaders headers = createHttpContentTypeAndAuthorizationHeaders();
+		
+		HttpEntity<String> httpEntity = new HttpEntity<String>(null, headers);
+		
+		ResponseEntity<String> responseEntity = template.exchange(SPECIFIC_SURVEY_URL, HttpMethod.GET, httpEntity, String.class);
 
 		// We want to send a GET request to the above URL.
-		ResponseEntity<String> responseEntity = template.getForEntity(SPECIFIC_SURVEY_URL, String.class);
+		//ResponseEntity<String> responseEntity = template.getForEntity(SPECIFIC_SURVEY_URL, String.class);  // Commented out once added lines above for Spring security.
 
 		// Check expected response. This is what we copied from the browser once got response running the app (localhost:8080/surveys/Survey1/questions. 
 
@@ -258,9 +284,8 @@ public class SurveyResourceIT {
 		// RequestBody
 		
 		// We also need to set the headers: Content-Type application/json  (Headers found in running post request in Talend)
-		// Configuration for request header.
-		HttpHeaders headers = new HttpHeaders();
-		headers.add("Content-Type", "application/json");
+		// Configuration for request header. We will go ahead and extract these header lines of code to a method.
+		HttpHeaders headers = createHttpContentTypeAndAuthorizationHeaders();
 		
 		// Combine both headers with the request body.
 		HttpEntity<String> httpEntity = new HttpEntity<String>(requestBody, headers);
@@ -287,10 +312,37 @@ public class SurveyResourceIT {
 		
 		// The test as is written above is causing the test to fail because there are only three question in the survey and this post request is creating a fourth question. We need to negate this side effect
 		// by immediately deleting the question after it is created. We need to combine the test for both the POST and the DELETE together.
+		ResponseEntity<String> responseEntityDelete = template.exchange(locationHeader, HttpMethod.DELETE, httpEntity, String.class);
+		
+		// Add an assertTrue to check if the responseEntityDelete is successful.
+		assertTrue(responseEntityDelete.getStatusCode().is2xxSuccessful());
 		
 		// Assign a DELETE request to locationHeader.
-		template.delete(locationHeader);
+		// template.delete(locationHeader);  // Created the DELETE path above so we comment this out.
 
+	}
+
+	private HttpHeaders createHttpContentTypeAndAuthorizationHeaders() {
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("Content-Type", "application/json");
+		
+		// We need to run these tests with authentication in place using Spring security. Look at Talend and add in the Authorization and the value (Basic YWRtaW46cGFzc3dvcmQ=).
+		// We need to send this along with our request so that our tests now succeed. Add the authorization header here.
+		//headers.add("Authorization", "Basic YWRtaW46cGFzc3dvcmQ=");  // This text is as a result of encoding our userid and password (admin, password) Since we added the auth encoding method below we can rewrite this.
+		headers.add("Authorization", "Basic " + performBasicAuthEncoding("admin", "password"));
+		return headers;
+	}
+	
+	// Just as Talend does an encoding for the authorization, we would need to do the same encoding in here. This would normally go in a central place with regard to the unit tests. For now adding here.
+	String performBasicAuthEncoding(String user, String password) {
+		
+		String combined = user + ":" + password;
+		
+		// Next, we want to do Base64 encoding to bytes.
+		byte[] encodedBytes = Base64.getEncoder().encode(combined.getBytes());
+		
+		// Then convert bytes back to String
+		return new String(encodedBytes);
 	}
 }
 

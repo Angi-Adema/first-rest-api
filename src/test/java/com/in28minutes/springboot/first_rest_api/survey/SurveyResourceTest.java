@@ -9,6 +9,7 @@ import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -19,6 +20,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 // We only want to launch up a web context with the specific resource we are trying to test. (SurveyResource) We also only want to mock out the specific method we wish to test.
 // This is easily done using Spring's @WebMvcTest framework.
 @WebMvcTest(controllers = SurveyResource.class)
+// Since we have brought in Spring security, we want to disable Spring security for the unit test as we do not want security in here at all since we are only testing SurveyService. Use @AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)   // Disable all the filters in here.
 class SurveyResourceTest {
 
 	// We are mocking the method surveyService.retrieveSpecificSurveyQuestion method since we are calling that method.
